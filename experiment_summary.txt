@@ -1,0 +1,29 @@
+========== DATASET ==========
+Records: 21656
+Columns: 12
+Partitions: 4
+
+========== VOLUME ==========
+Read Time: 0.457966 seconds
+Processing Time: 1.757725 seconds
+Analytics Time: 0.162945 seconds
+Total Time: 2.378643 seconds
+
+========== VARIETY ==========
+Unique Countries: 311
+Review Text Statistics: {'minimum': 0, 'maximum': 9951, 'average': 445.00152396785813}
+
+========== VELOCITY (seconds) ==========
+{'minimum_seconds': 0, 'maximum_seconds': 21145444, 'average_seconds': 25569.66210696305, 'median_seconds': 7448}
+
+========== ANALYTICS ==========
+Average Rating: [{'average_rating': 2.1865444877029723}]
+Top Country: [{'country': 'US', 'total_reviews': 9286}]
+Top Reviewer: [{'reviewer_name': 'However they are not always the cheapest depending on what you are after', 'review_count': 2012}]
+
+========== SCALABILITY (Synthetic Scaled Dataset) ==========
+Scale | Records | Read Time | Processing Time | Analytics Time | Total Time
+1x | 21654 | N/A | 0.840625 | 0.225739 | 1.066380
+2x | 43308 | N/A | 0.734492 | 0.208535 | 1.000800
+5x | 108270 | N/A | 1.322065 | 0.215756 | 1.607391
+10x | 216540 | N/A | 2.055896 | 0.222620 | 2.456114
