@@ -1,0 +1,107 @@
+HUONG DAN CAI DAT VA CHAY
+Du an: Phan tich Amazon Reviews bang Apache Spark
+
+1. YEU CAU MOI TRUONG
+
+- He dieu hanh: Windows
+- Python: 3.14.7
+- Java: 17.0.12 LTS
+- Apache Spark: 4.2.0
+- PySpark: 4.2.0
+- Cong cu: Visual Studio Code
+
+Kiem tra moi truong:
+
+    python --version
+    java -version
+    python -c "import pyspark; print(pyspark.__version__)"
+    spark-submit --version
+
+2. CAU TRUC THU MUC
+
+Dat cac file trong cung thu muc:
+
+    Amazon_Reviews.csv
+    step3_read_dataset.py
+    step5_processing.py
+    step6_analytics.py
+    step7_volume_variety_velocity.py
+    step8_benchmark_scalability.py
+    amazon_reviews_experiment.py
+
+3. CAI DAT PYSPARK
+
+Neu chua co PySpark, mo PowerShell va chay:
+
+    python -m pip install pyspark==4.2.0
+
+Dam bao bien JAVA_HOME tro den thu muc Java 17 neu Spark khong tim thay Java.
+
+4. CHAY THEO TUNG BUOC
+
+Buoc 1 - Doc va kiem tra dataset:
+
+    python .\step3_read_dataset.py
+
+Ket qua gom Spark version, so record, so column, schema, 5 record mau va so partition.
+
+Buoc 2 - Processing:
+
+    python .\step5_processing.py
+
+Ket qua gom NULL count, duplicate, schema sau xu ly va 5 record sau Processing.
+
+Buoc 3 - Analytics bang Spark SQL:
+
+    python .\step6_analytics.py
+
+Chuong trinh thuc hien 6 truy van ve tong review, rating, country, thoi gian va top reviewer.
+
+Buoc 4 - Volume, Variety va Velocity:
+
+    python .\step7_volume_variety_velocity.py
+
+Chuong trinh phan tich so record, partition, country, do dai Review Text va khoang cach thoi gian giua cac review.
+
+Buoc 5 - Benchmark va Scalability:
+
+    python .\step8_benchmark_scalability.py
+
+Chuong trinh do Read Time, Processing Time, Analytics Time va Total Time cho dataset goc va cac scale 1x, 2x, 5x, 10x.
+
+5. CHAY TOAN BO PIPELINE
+
+    python .\amazon_reviews_experiment.py
+
+Pipeline thuc hien lan luot:
+
+    Input -> Read -> Processing -> Analytics -> Volume/Variety/Velocity -> Benchmark -> Output
+
+6. KET QUA DAU RA
+
+Ket qua duoc ghi vao thu muc output/:
+
+    output/processed_reviews/
+    output/rating_distribution/
+    output/reviews_by_country/
+    output/reviews_by_country_sql/
+    output/reviews_by_time/
+    output/reviews_by_time_sql/
+    output/top_reviewers/
+    output/rating_statistics/
+    output/velocity_analysis/
+    output/performance_results/
+
+File tong hop ket qua:
+
+    experiment_summary.txt
+
+Spark co the ghi nhieu part file trong moi thu muc output. Day la hanh vi binh thuong cua Spark va khong can gop thanh mot file duy nhat.
+
+7. LUU Y
+
+- Khong thay doi ten Amazon_Reviews.csv neu chua cap nhat DATASET_PATH.
+- Dataset goc chi duoc doc, khong bi ghi de.
+- Cac dataset 2x, 5x va 10x la Synthetic Scaled Dataset, duoc tao de kiem tra kha nang mo rong.
+- Thoi gian benchmark co the thay doi giua cac lan chay tuy theo CPU, RAM, cache va trang thai he dieu hanh.
+- Neu gap loi SparkDateTimeException hoac SparkNumberFormatException, kiem tra rang code dang su dung try_cast va try_to_timestamp.
