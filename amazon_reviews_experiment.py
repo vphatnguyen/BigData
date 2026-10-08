@@ -21,6 +21,7 @@ def load_data(spark: SparkSession, path: Path = DATASET_PATH) -> DataFrame:
         .option("inferSchema", True)
         .option("quote", '"')
         .option("escape", '"')
+        .option("multiLine", True)
         .csv(str(path))
     )
 
@@ -114,6 +115,37 @@ def analyze_variety(cleaned_df: DataFrame) -> dict:
         "unique_countries": unique_countries,
         "country_counts": country_counts,
         "text_stats": text_stats,
+    }
+
+
+def analyze_veracity(cleaned_df: DataFrame, processing: dict) -> dict:
+    cleaned_count = processing["cleaned_count"]
+    duplicate_count = processing["duplicates_removed"]
+    invalid_rating_count = cleaned_df.where(
+        F.col("rating").isNull() | ~F.col("rating").between(1, 5)
+    ).count()
+    invalid_date_count = cleaned_df.where(F.col("review_date").isNull()).count()
+    empty_review_text_count = cleaned_df.where(
+        F.length(F.trim(F.coalesce(F.col("review_text"), F.lit("")))) == 0
+    ).count()
+    valid_count = cleaned_df.where(
+        F.col("reviewer_name").isNotNull()
+        & F.col("country").isNotNull()
+        & F.col("review_date").isNotNull()
+        & F.col("rating").between(1, 5)
+        & (F.length(F.trim(F.coalesce(F.col("review_text"), F.lit("")))) > 0)
+    ).count()
+    return {
+        "raw_count": processing["records_before"],
+        "cleaned_count": cleaned_count,
+        "duplicate_count": duplicate_count,
+        "duplicate_rate": duplicate_count / processing["records_before"] * 100,
+        "null_counts": processing["null_counts"],
+        "invalid_rating_count": invalid_rating_count,
+        "invalid_date_count": invalid_date_count,
+        "empty_review_text_count": empty_review_text_count,
+        "valid_count": valid_count,
+        "valid_rate": valid_count / cleaned_count * 100,
     }
 
 
@@ -237,6 +269,7 @@ def run_scalability_test(spark: SparkSession, cleaned_df: DataFrame) -> list[dic
 def save_results(
     cleaned_df: DataFrame,
     variety: dict,
+    veracity: dict,
     velocity: dict,
     sql_results: dict,
     performance: dict,
@@ -265,25 +298,56 @@ def save_results(
     ])
     spark.createDataFrame(scalability, schema=scalability_schema).write.mode("overwrite").option("header", True).csv(str(OUTPUT_DIR / "performance_results"))
 
+    total_reviews = sql_results["query_1_total_reviews"][0]["total_reviews"]
+    average_text_length = variety["text_stats"]["average"]
+    velocity_stats = velocity["stats"]
+    average_rating = sql_results["query_2_average_rating"][0]["average_rating"]
+    top_country = sql_results["query_4_reviews_by_country"][0]
+    top_reviewer = sql_results["query_6_top_reviewers"][0]
+    country_share = top_country["total_reviews"] / total_reviews * 100
+    average_gap_hours = velocity_stats["average_seconds"] / 3600
+    median_gap_hours = velocity_stats["median_seconds"] / 3600
+    maximum_gap_days = velocity_stats["maximum_seconds"] / 86400
+
     summary_lines = [
         "========== DATASET ==========",
         f"Records: {performance['records']}",
         f"Columns: {performance['columns']}",
         f"Partitions: {cleaned_df.rdd.getNumPartitions()}",
+        "Interpretation: The raw CSV is processed with Spark using 4 partitions.",
+        "\n========== VERACITY ==========",
+        f"Raw Records: {veracity['raw_count']}",
+        f"Cleaned Records: {veracity['cleaned_count']}",
+        f"Duplicates Removed: {veracity['duplicate_count']}",
+        f"Duplicate Rate: {veracity['duplicate_rate']:.2f}%",
+        f"NULL Counts: {veracity['null_counts']}",
+        f"Invalid Ratings After Parsing: {veracity['invalid_rating_count']}",
+        f"Invalid Dates After Parsing: {veracity['invalid_date_count']}",
+        f"Empty Review Text: {veracity['empty_review_text_count']}",
+        f"Valid Records: {veracity['valid_count']}",
+        f"Valid Record Rate: {veracity['valid_rate']:.2f}%",
+        "Interpretation: Veracity is evaluated through completeness, duplicate detection, parse validity, and the proportion of usable records.",
         "\n========== VOLUME ==========",
         f"Read Time: {performance['read_time']:.6f} seconds",
         f"Processing Time: {performance['processing_time']:.6f} seconds",
         f"Analytics Time: {performance['analytics_time']:.6f} seconds",
         f"Total Time: {performance['total_time']:.6f} seconds",
+        "Interpretation: These timings show the cost of reading, cleaning, aggregating, and completing the benchmark.",
         "\n========== VARIETY ==========",
         f"Unique Countries: {variety['unique_countries']}",
         f"Review Text Statistics: {variety['text_stats']}",
+        f"Interpretation: Reviews come from {variety['unique_countries']} countries and contain about {average_text_length:.2f} characters on average.",
         "\n========== VELOCITY (seconds) ==========",
         f"{velocity['stats']}",
+        f"Interpretation: The average gap between consecutive reviews is about {average_gap_hours:.2f} hours; the median is {median_gap_hours:.2f} hours.",
+        f"Interpretation: The largest gap is about {maximum_gap_days:.2f} days, showing that review activity is not continuous.",
         "\n========== ANALYTICS ==========",
         f"Average Rating: {sql_results['query_2_average_rating']}",
         f"Top Country: {sql_results['query_4_reviews_by_country'][:1]}",
         f"Top Reviewer: {sql_results['query_6_top_reviewers'][:1]}",
+        f"Interpretation: The average rating is {average_rating:.2f}/5, indicating an overall negative rating trend.",
+        f"Interpretation: {top_country['country']} contributes {country_share:.2f}% of the {total_reviews} cleaned reviews.",
+        f"Interpretation: {top_reviewer['reviewer_name']} ranks first by the profile Review Count field ({top_reviewer['review_count']} reviews).",
         "\n========== SCALABILITY (Synthetic Scaled Dataset) ==========",
         "Scale | Records | Read Time | Processing Time | Analytics Time | Total Time",
     ]
@@ -292,6 +356,9 @@ def save_results(
             f"{row['scale']} | {row['records']} | {row['read_time']:.6f} | {row['processing_time']:.6f} | "
             f"{row['analytics_time']:.6f} | {row['total_time']:.6f}"
         )
+    summary_lines.append(
+        "Interpretation: The scaled datasets test how processing time changes as the input grows from 1x to 10x."
+    )
     (BASE_DIR / "experiment_summary.txt").write_text("\n".join(summary_lines), encoding="utf-8")
 
 
@@ -311,6 +378,7 @@ def main() -> None:
         cleaned_df, processing = process_data(raw_df)
         cleaned_df.persist(StorageLevel.MEMORY_AND_DISK).count()
         variety = analyze_variety(cleaned_df)
+        veracity = analyze_veracity(cleaned_df, processing)
         velocity = analyze_velocity(cleaned_df)
         print("Execution plan for country aggregation:")
         variety["country_counts"].explain()
@@ -324,7 +392,7 @@ def main() -> None:
         scalability = run_scalability_test(spark, cleaned_df)
         performance["processing"] = processing
         performance["sql_timings"] = sql_timings
-        save_results(cleaned_df, variety, velocity, sql_results, performance, scalability)
+        save_results(cleaned_df, variety, veracity, velocity, sql_results, performance, scalability)
         print("Results saved to:", OUTPUT_DIR)
         print("Summary saved to:", BASE_DIR / "experiment_summary.txt")
     finally:

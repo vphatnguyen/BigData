@@ -1,29 +1,51 @@
 ========== DATASET ==========
-Records: 21656
-Columns: 12
+Records: 21214
+Columns: 9
 Partitions: 4
+Interpretation: The raw CSV is processed with Spark using 4 partitions.
+
+========== VERACITY ==========
+Raw Records: 21214
+Cleaned Records: 21212
+Duplicates Removed: 2
+Duplicate Rate: 0.01%
+NULL Counts: {'Reviewer Name': 0, 'Profile Link': 51, 'Country': 159, 'Review Count': 159, 'Review Date': 159, 'Rating': 159, 'Review Title': 159, 'Review Text': 159, 'Date of Experience': 267}
+Invalid Ratings After Parsing: 157
+Invalid Dates After Parsing: 157
+Empty Review Text: 157
+Valid Records: 21055
+Valid Record Rate: 99.26%
+Interpretation: Veracity is evaluated through completeness, duplicate detection, parse validity, and the proportion of usable records.
 
 ========== VOLUME ==========
-Read Time: 0.457966 seconds
-Processing Time: 1.757725 seconds
-Analytics Time: 0.162945 seconds
-Total Time: 2.378643 seconds
+Read Time: 0.504549 seconds
+Processing Time: 1.699526 seconds
+Analytics Time: 0.094568 seconds
+Total Time: 2.298654 seconds
+Interpretation: These timings show the cost of reading, cleaning, aggregating, and completing the benchmark.
 
 ========== VARIETY ==========
-Unique Countries: 311
-Review Text Statistics: {'minimum': 0, 'maximum': 9951, 'average': 445.00152396785813}
+Unique Countries: 149
+Review Text Statistics: {'minimum': 0, 'maximum': 9951, 'average': 457.4312181783896}
+Interpretation: Reviews come from 149 countries and contain about 457.43 characters on average.
 
 ========== VELOCITY (seconds) ==========
 {'minimum_seconds': 0, 'maximum_seconds': 21145444, 'average_seconds': 25569.66210696305, 'median_seconds': 7448}
+Interpretation: The average gap between consecutive reviews is about 7.10 hours; the median is 2.07 hours.
+Interpretation: The largest gap is about 244.74 days, showing that review activity is not continuous.
 
 ========== ANALYTICS ==========
-Average Rating: [{'average_rating': 2.1865444877029723}]
+Average Rating: [{'average_rating': 2.1866540014248397}]
 Top Country: [{'country': 'US', 'total_reviews': 9286}]
-Top Reviewer: [{'reviewer_name': 'However they are not always the cheapest depending on what you are after', 'review_count': 2012}]
+Top Reviewer: [{'reviewer_name': 'Tar', 'review_count': 633}]
+Interpretation: The average rating is 2.19/5, indicating an overall negative rating trend.
+Interpretation: US contributes 43.78% of the 21212 cleaned reviews.
+Interpretation: Tar ranks first by the profile Review Count field (633 reviews).
 
 ========== SCALABILITY (Synthetic Scaled Dataset) ==========
 Scale | Records | Read Time | Processing Time | Analytics Time | Total Time
-1x | 21654 | N/A | 0.840625 | 0.225739 | 1.066380
-2x | 43308 | N/A | 0.734492 | 0.208535 | 1.000800
-5x | 108270 | N/A | 1.322065 | 0.215756 | 1.607391
-10x | 216540 | N/A | 2.055896 | 0.222620 | 2.456114
+1x | 21212 | 0.820195 | 0.510547 | 0.120706 | 3.513349
+2x | 42424 | 0.753636 | 0.696007 | 0.167774 | 2.597313
+5x | 106060 | 0.808110 | 1.210865 | 0.097099 | 3.234805
+10x | 212120 | 1.408061 | 1.578771 | 0.085403 | 4.340587
+Interpretation: The scaled datasets test how processing time changes as the input grows from 1x to 10x.
