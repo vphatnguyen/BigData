@@ -18,10 +18,10 @@ Valid Record Rate: 99.26%
 Interpretation: Veracity is evaluated through completeness, duplicate detection, parse validity, and the proportion of usable records.
 
 ========== VOLUME ==========
-Read Time: 0.504549 seconds
-Processing Time: 1.699526 seconds
-Analytics Time: 0.094568 seconds
-Total Time: 2.298654 seconds
+Read Time: 0.693623 seconds
+Processing Time: 2.142133 seconds
+Analytics Time: 0.168276 seconds
+Total Time: 3.004044 seconds
 Interpretation: These timings show the cost of reading, cleaning, aggregating, and completing the benchmark.
 
 ========== VARIETY ==========
@@ -44,8 +44,8 @@ Interpretation: Tar ranks first by the profile Review Count field (633 reviews).
 
 ========== SCALABILITY (Synthetic Scaled Dataset) ==========
 Scale | Records | Read Time | Processing Time | Analytics Time | Total Time
-1x | 21212 | 0.820195 | 0.510547 | 0.120706 | 3.513349
-2x | 42424 | 0.753636 | 0.696007 | 0.167774 | 2.597313
-5x | 106060 | 0.808110 | 1.210865 | 0.097099 | 3.234805
-10x | 212120 | 1.408061 | 1.578771 | 0.085403 | 4.340587
+1x | 21212 | 1.043415 | 0.513730 | 0.137984 | 4.444216
+2x | 42424 | 0.612033 | 0.795309 | 0.128754 | 2.743754
+5x | 106060 | 0.942124 | 1.324199 | 0.178855 | 3.689504
+10x | 212120 | 1.417858 | 1.802774 | 0.169058 | 5.332263
 Interpretation: The scaled datasets test how processing time changes as the input grows from 1x to 10x.
