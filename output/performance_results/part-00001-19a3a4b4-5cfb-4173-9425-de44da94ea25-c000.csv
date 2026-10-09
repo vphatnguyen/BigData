@@ -1,0 +1,2 @@
+scale,records,read_time,processing_time,analytics_time,total_time,synthetic
+2x,42424,0.5792956000077538,0.7923723999992944,0.14145819999976084,2.596549900001264,true
